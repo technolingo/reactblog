@@ -1,57 +1,37 @@
 import React, { Component } from 'react';
 
-import axios from 'axios';
+import { Route, NavLink, Switch, Redirect } from 'react-router-dom';
 
-import Post from '../../components/Post/Post';
-import FullPost from '../../components/FullPost/FullPost';
-import NewPost from '../../components/NewPost/NewPost';
 import './Blog.css';
+import Posts from './Posts/Posts';
+import NewPost from './NewPost/NewPost';
 
 class Blog extends Component {
   state = {
-    posts: [],
-    currentPostID: null
-  }
-
-  componentDidMount = () => {
-    axios.get('https://jsonplaceholder.typicode.com/posts').then(
-      r => {
-        const posts = r.data.slice(0, 4);
-        const updatedPosts = posts.map(
-          p => ({...p, author: 'Zil'})
-        );
-        this.setState({posts: updatedPosts});
-        console.log(r);
-      }
-    );
-  }
-
-  postClickedHandler = (id) => {
-    this.setState({currentPostID: id});
+    auth: true
   }
 
   render = () => {
-    const posts = this.state.posts.map(p => (
-      <Post
-        key={p.id}
-        ckey={p.id}
-        title={p.title}
-        author={p.author}
-        clicked={this.postClickedHandler.bind(this, p.id)}
-      />
-    ));
-
     return (
-      <div>
-        <section className='Posts'>
-          {posts}
-        </section>
-        <section>
-          <FullPost id={this.state.currentPostID} />
-        </section>
-        <section>
-          <NewPost />
-        </section>
+      <div className='Blog'>
+        <header>
+          <nav>
+            <ul>
+              <li><NavLink exact to='/posts/'>Posts</NavLink></li>
+              <li><NavLink exact to='/new-post'>New Post</NavLink></li>
+            </ul>
+          </nav>
+        </header>
+
+        <Switch>
+          {/* Guard: no rendering NewPost unless user is authenticated */}
+          {this.state.auth ? <Route path='/new-post' exact component={NewPost} /> : null}
+          <Route path='/posts/' component={Posts} />
+          <Redirect from='/' exact to='/posts/' />
+          <Route render={() => <h1>404: Page Not Found</h1>} />
+          {/* <Redirect from='/' to='/posts/' /> */}
+        </Switch>
+
       </div>
     );
   }
